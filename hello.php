@@ -87,8 +87,36 @@
       $Id = mysqli_fetch_assoc($IDresult);
       $Id['max']++;
 
-      $INSERTresult = mysqli_query($link, 'INSERT INTO test01 (id, address, station, distance, link, time, walk_time, name, other)
-      VALUES ('.$Id['max'].', "'.$Address.'", "'.$Station.'", '.$Distance.', "'.$Link.'", "'.$Time.'", "'.$Walk_time.'", "'.$Name.'", "'.$Other.'")');
+      // $INSERTresult = mysqli_query($link, 'INSERT INTO test01 (id, address, station, distance, link, time, walk_time, name, other)
+      // VALUES ('.$Id['max'].', "'.$Address.'", "'.$Station.'", '.$Distance.', "'.$Link.'", "'.$Time.'", "'.$Walk_time.'", "'.$Name.'", "'.$Other.'")');
+
+      // mysqli_prepare でクエリを用意したあと、 bind_param で実際の値を関連づけしています
+      // 不本意に引数を増やされたり、途中でクエリを終了して別のクエリを実行されることを防ぐことができます
+      // $stmt にはオブジェクトが代入されます. このあとでてくる $stmt->__name__(); という文法は、
+      // $stmt がもっている __name__ という名前のメソッドを呼び出すことを意味しています.
+      $stmt = mysqli_prepare($link, 'INSERT INTO test01 (id, address, station, distance, link, time, walk_time, name, other) VALUES (?,?,?,?,?,?,?,?,?)');
+
+      // 最初の引数は型を表すキーワードで、(?,?,?,?,?,?,?,?,?)の個数に対応しています
+      // キーワードは、下記の4つが存在します
+      // i 対応する変数の型は integer です。
+      // d 対応する変数の型は double です。
+      // s 対応する変数の型は string です。
+      // b 対応する変数の型は blob で、複数のパケットに分割して送信されます。
+      // -- 引用元：http://php.net/manual/ja/mysqli-stmt.bind-param.php
+      $stmt->bind_param('issdsssss',
+      $Id['max'],
+      $Address,
+      $Station,
+      $Distance,
+      $Link,
+      $Time,
+      $Walk_time,
+      $Name,
+      $Other
+      );
+
+      // SQLを実行します
+      $INSERTresult = $stmt->execute();
 
       if(!$INSERTresult){
         echo 'INSERT error';
