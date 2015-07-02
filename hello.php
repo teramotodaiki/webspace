@@ -29,6 +29,23 @@
 <br><br>
 
 <?php
+
+/**
+ * -- mysqli を使っているので、SQLインジェクションを防ぐ書き方をしてみようか.
+ *
+ * SQLインジェクションというのは、ユーザー名のところに 'or 1 = 1' みたいな
+ * 文字列を入力することで、意図しないSQLを実行させる攻撃方法のことです.
+ *
+ * (たとえば、 Name から Link までのテキストエリアに適当な入力を与えた上で、
+ * Other に下記を入力して追加ボタンを押してみてください)
+ * "); DELETE FROM test01; --
+ * (記号や半角スペースも含めて全部入力すること.とくに最後の半角スペース)
+ *
+ * 結論からいうと、 mysqli_stmt_bind_param を使用することで、内部的に
+ * SQLインジェクションを防ぐ処理を行っています.便利なのでぜひ使いましょう.
+ */
+
+
   $url = 'localhost';
   $user = 'iken_nameko';
   $pass = 'nameko';
@@ -70,7 +87,7 @@
       $Id = mysqli_fetch_assoc($IDresult);
       $Id['max']++;
 
-      $INSERTresult = mysqli_query($link, 'INSERT INTO test01 (id, address, station, distance, link, time, walk_time, name, other) 
+      $INSERTresult = mysqli_query($link, 'INSERT INTO test01 (id, address, station, distance, link, time, walk_time, name, other)
       VALUES ('.$Id['max'].', "'.$Address.'", "'.$Station.'", '.$Distance.', "'.$Link.'", "'.$Time.'", "'.$Walk_time.'", "'.$Name.'", "'.$Other.'")');
 
       if(!$INSERTresult){
